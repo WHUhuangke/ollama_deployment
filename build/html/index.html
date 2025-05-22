@@ -1,0 +1,242 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="zh-CN">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ollama Linux部署与LLM调用 &mdash; ollama v1 文档</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=3a60158e"></script>
+      <script src="_static/doctools.js?v=888ff710"></script>
+      <script src="_static/sphinx_highlight.js?v=4825356b"></script>
+      <script src="_static/translations.js?v=beaddf03"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="索引" href="genindex.html" />
+    <link rel="search" title="搜索" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="#" class="icon icon-home">
+            ollama
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="搜索文档" aria-label="搜索文档" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="导航菜单">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">ollama Linux部署与LLM调用</a></li>
+<li><a class="reference internal" href="#ollama">删除旧的ollama环境</a><ul>
+<li><a class="reference internal" href="#id1">1.查看ollama环境位置（若存在）</a></li>
+<li><a class="reference internal" href="#id2">2.停止ollama服务</a></li>
+<li><a class="reference internal" href="#id3">3.删除 Ollama 主程序​</a></li>
+<li><a class="reference internal" href="#id4">4.清理数据目录​</a></li>
+<li><a class="reference internal" href="#systemd">5.移除 systemd 服务（如存在）​</a></li>
+<li><a class="reference internal" href="#id5">6.验证卸载完成</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id6">下载安装包，进行安装</a><ul>
+<li><a class="reference internal" href="#id7">1.下载安装包</a></li>
+<li><a class="reference internal" href="#id8">2.解压</a></li>
+<li><a class="reference internal" href="#id9">3. 修改脚本</a></li>
+<li><a class="reference internal" href="#id10">4.执行安装脚本</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id11">调用模型</a></li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="移动版导航菜单" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">ollama</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="页面导航">
+  <ul class="wy-breadcrumbs">
+      <li><a href="#" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">ollama Linux部署与LLM调用</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/index.rst.txt" rel="nofollow"> 查看页面源码</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="ollama-linuxllm">
+<h1>ollama Linux部署与LLM调用<a class="headerlink" href="#ollama-linuxllm" title="此标题的永久链接"></a></h1>
+<div class="toctree-wrapper compound">
+</div>
+<p>本教程基于Ubuntu 18.04.6 LTS (GNU/Linux 4.15.0-213-generic x86_64)系统，使用离线部署方式进行ollama部署，能够有效解决
+官网下载安装速度巨慢的问题。教程分为3个部分：1.删除旧的ollama环境；2.下载安装包并且进行安装；3.启动ollama服务，调用模型</p>
+</section>
+<section id="ollama">
+<h1>删除旧的ollama环境<a class="headerlink" href="#ollama" title="此标题的永久链接"></a></h1>
+<section id="id1">
+<h2>1.查看ollama环境位置（若存在）<a class="headerlink" href="#id1" title="此标题的永久链接"></a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>which<span class="w"> </span>ollama
+</pre></div>
+</div>
+<p>使用该命令后若得到ollama的位置，如/usr/bin/ollama或者/usr/local/bin/ollama，则开始删除操作，若无则可跳过直接进行安装。</p>
+</section>
+<section id="id2">
+<h2>2.停止ollama服务<a class="headerlink" href="#id2" title="此标题的永久链接"></a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>systemctl<span class="w"> </span>stop<span class="w"> </span>ollama.service
+</pre></div>
+</div>
+</section>
+<section id="id3">
+<h2>3.删除 Ollama 主程序​<a class="headerlink" href="#id3" title="此标题的永久链接"></a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>rm<span class="w"> </span>/usr/bin/ollama
+</pre></div>
+</div>
+</section>
+<section id="id4">
+<h2>4.清理数据目录​<a class="headerlink" href="#id4" title="此标题的永久链接"></a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>rm<span class="w"> </span>-rf<span class="w"> </span>/usr/share/ollama/<span class="w">  </span><span class="c1"># 默认安装目录</span>
+sudo<span class="w"> </span>rm<span class="w"> </span>-rf<span class="w"> </span>~/.ollama<span class="w">  </span><span class="c1"># 用户数据（模型、配置等）</span>
+</pre></div>
+</div>
+</section>
+<section id="systemd">
+<h2>5.移除 systemd 服务（如存在）​<a class="headerlink" href="#systemd" title="此标题的永久链接"></a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>systemctl<span class="w"> </span>disable<span class="w"> </span>ollama.service
+sudo<span class="w"> </span>rm<span class="w"> </span>/etc/systemd/system/ollama.service
+sudo<span class="w"> </span>systemctl<span class="w"> </span>daemon-reload
+</pre></div>
+</div>
+</section>
+<section id="id5">
+<h2>6.验证卸载完成<a class="headerlink" href="#id5" title="此标题的永久链接"></a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>which<span class="w"> </span>ollama<span class="w">  </span><span class="c1"># 应无输出</span>
+ls<span class="w"> </span>/usr/bin/ollama<span class="w">  </span><span class="c1"># 检查文件是否已删除</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="id6">
+<h1>下载安装包，进行安装<a class="headerlink" href="#id6" title="此标题的永久链接"></a></h1>
+<section id="id7">
+<h2>1.下载安装包<a class="headerlink" href="#id7" title="此标题的永久链接"></a></h2>
+<p>从下载地址 <a class="reference external" href="https://github.com/ollama/ollama/releases">https://github.com/ollama/ollama/releases</a> 中选择你需要的ollama版本，本人使用0.7.0，在assets处下载压缩包。
+<strong>此处需注意</strong>：在cmd窗口中查看服务器CPU的型号</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>lscpu
+</pre></div>
+</div>
+<p>x86_64 CPU选择下载文件ollama-linux-amd64.tgz，arm架构CPU选择下载ollama-linux-arm64.tgz。
+下载完成后上传至服务器</p>
+</section>
+<section id="id8">
+<h2>2.解压<a class="headerlink" href="#id8" title="此标题的永久链接"></a></h2>
+<p>将安装脚本 <a class="reference external" href="https://github.com/ollama/ollama/blob/main/scripts/install.sh">https://github.com/ollama/ollama/blob/main/scripts/install.sh</a> 放到和tgz压缩包同一个路径下，并且执行命令解压安装包</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>tar<span class="w"> </span>-C<span class="w"> </span>/usr<span class="w"> </span>-xzf<span class="w"> </span>ollama-linux-amd64.tgz
+</pre></div>
+</div>
+</section>
+<section id="id9">
+<h2>3. 修改脚本<a class="headerlink" href="#id9" title="此标题的永久链接"></a></h2>
+<p>首先，由于我们使用的是安装包部署，因此要将原来的下载链接注释掉</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>status<span class="w"> </span><span class="s2">&quot;Downloading ollama...&quot;</span>
+<span class="c1">## 在install.sh的第65行</span>
+<span class="c1">#curl --fail --show-error --location --progress-bar -o $TEMP_DIR/ollama &quot;https://ollama.com/download/ollama-linux-${ARCH}${VER_PARAM}&quot;</span>
+</pre></div>
+</div>
+<p>其次，第二处修改，修改ollama安装目录</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>status<span class="w"> </span><span class="s2">&quot;Installing ollama to </span><span class="nv">$BINDIR</span><span class="s2">...&quot;</span>
+<span class="nv">$SUDO</span><span class="w"> </span>install<span class="w"> </span>-o0<span class="w"> </span>-g0<span class="w"> </span>-m755<span class="w"> </span>-d<span class="w"> </span><span class="nv">$BINDIR</span>
+<span class="c1">## 在install.sh的第73行</span>
+<span class="c1">#$SUDO install -o0 -g0 -m755 $TEMP_DIR/ollama $BINDIR/ollama</span>
+<span class="nv">$SUDO</span><span class="w"> </span>install<span class="w"> </span>-o0<span class="w"> </span>-g0<span class="w"> </span>-m755<span class="w"> </span>./ollama-linux-amd64<span class="w">  </span><span class="nv">$BINDIR</span>/ollama
+</pre></div>
+</div>
+</section>
+<section id="id10">
+<h2>4.执行安装脚本<a class="headerlink" href="#id10" title="此标题的永久链接"></a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>bash<span class="w"> </span>install.sh
+</pre></div>
+</div>
+<p>如果报错误权限不足，执行</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>chmod<span class="w"> </span>+x<span class="w"> </span>install.sh
+</pre></div>
+</div>
+<p>验证安装是否完成</p>
+<p>输出如下版本号则说明成功</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ollama<span class="w"> </span>version<span class="w"> </span>is<span class="w"> </span><span class="m">0</span>.7.0
+</pre></div>
+</div>
+</section>
+</section>
+<section id="id11">
+<h1>调用模型<a class="headerlink" href="#id11" title="此标题的永久链接"></a></h1>
+<p>重启ollama服务，查看服务启动状态</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>systemctl<span class="w"> </span>restart<span class="w"> </span>ollama
+sudo<span class="w"> </span>systemctl<span class="w"> </span>status<span class="w"> </span>ollama
+</pre></div>
+</div>
+<p>输出active (running)则启动成功，接下来调用模型</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ollama<span class="w"> </span>run<span class="w"> </span>qwen3:30b-a3b
+</pre></div>
+</div>
+<p>输出</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pulling<span class="w"> </span>manifest
+verifying<span class="w"> </span>sha256<span class="w"> </span>digest
+writing<span class="w"> </span>manifest
+success
+</pre></div>
+</div>
+<p>大功告成</p>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; 版权所有 2025, hk。</p>
+  </div>
+
+  利用 <a href="https://www.sphinx-doc.org/">Sphinx</a> 构建，使用的 
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">主题</a>
+    由 <a href="https://readthedocs.org">Read the Docs</a> 开发.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
