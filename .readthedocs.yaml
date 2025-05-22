@@ -22,5 +22,4 @@ sphinx:
 #    - requirements: docs/requirements.txt
 python:
   install:
-    - requirements: docs/requirements.txt  # 如果存在
     - package: sphinx-rtd-theme>=1.3.0    # 强制安装主题
